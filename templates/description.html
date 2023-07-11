@@ -1,0 +1,39 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Description
+{% endblock %}
+
+{% block main %}
+    <!--
+        <img src="{{ URL + movie.poster_path }}" alt="{{ movie.title }}">
+        <p>Movie title: {{ movie.title }}</p>
+        <p>Release Date: {{ movie.release_date }}</p>
+        <p>Overview: {{ movie.overview }}</p>
+        <iframe src="{{ movie_link }}"></iframe>
+    -->
+
+    <div class="container">
+        <div class="row">
+          <div class="col-md-4">
+            <img src="{{ URL + movie.poster_path }}" alt="{{ movie.title }}">
+        </div>
+          <div class="col-md-8">
+            <br><br>
+            <p><span class="movie_info_headings">Movie title:</span> {{ movie.title }}</p>
+            <p><span class="movie_info_headings">Release Date:</span> {{ movie.release_date }}</p>
+            <p class="overview"><span class="movie_info_headings">Overview:</span> {{ movie.overview }}</p>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-12">
+            <br><br><br>
+            <iframe src="{{ movie_link }}"></iframe>
+          </div>
+        </div>
+      </div>
+
+
+
+
+{% endblock %}
