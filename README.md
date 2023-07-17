@@ -1,7 +1,7 @@
 # CineVerse
 ### Description
 Allow users to find information on popular movies that are currently out. Quickly and easily access movie information.
-### Demo: <https://youtu.be/YnHx_m5ZAhI>
+### Demo: <[YouTube Showcase](https://youtu.be/FrbTbngjF1g)>
 ### Features
 #### Login/Sign-Up
 The website automatically goes to the login page at the start. From there, you enter your username and password, hit enter/click the login button, and you'll be redirected to the homepage. However, if you don't have an account, I added a hyper-link and button to take you to the sign up page. From there, you'll create a username and password, which you'll confirm by entering twice. The username is stored in SQL as usual, but the password stored is a generated hash using the password created by the user as input to the generate_password_hash function from the werkzeug.security library.
