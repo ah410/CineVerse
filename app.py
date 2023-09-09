@@ -1,7 +1,6 @@
 import os
 import requests
 
-from dotenv import load_dotenv
 from flask import Flask, flash, render_template, request, session, redirect, url_for
 from flask_session import Session
 from datetime import timedelta
@@ -79,7 +78,7 @@ def index():
             db.execute("INSERT OR IGNORE INTO movies (id, title, overview, release_date, poster_path) VALUES (?, ?, ?, ?, ?)", id, title, overview, release_date, poster_path)
 
         # Query the database
-        movies = db.execute("SELECT * FROM movies")
+        movies = db.execute("SELECT * FROM movies ORDER BY release_date DESC")
 
         # Create table at root URL of website if it doesn't exist. Ensures table only created once.
         db.execute("CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT NOT NULL, password TEXT NOT NULL)")
