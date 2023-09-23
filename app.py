@@ -43,6 +43,9 @@ large_poster_path_URL = 'http://image.tmdb.org/t/p/w342'
 # Configure CS50 Library to use SQLite database
 db = SQL("sqlite:///database.db")
 
+# Create users table
+db.execute("CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT NOT NULL, password TEXT NOT NULL)")
+
 # Define login_required function that requires login for home page and logout route
 def login_required(f):
     @wraps(f)
