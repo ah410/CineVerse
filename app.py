@@ -80,9 +80,6 @@ def index():
         # Query the database
         movies = db.execute("SELECT * FROM movies ORDER BY release_date DESC")
 
-        # Create table at root URL of website if it doesn't exist. Ensures table only created once.
-        db.execute("CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT NOT NULL, password TEXT NOT NULL)")
-
         # Return index.html and pass movies SQL database into it
         return render_template("index.html", movies=movies, URL = base_poster_path_URL)
 
@@ -168,7 +165,6 @@ def after_request(response):
 @app.route("/logout")
 @login_required
 def logout():
-
     # Forget any user_id and set logged in equal to false
     session.clear()
     session["logged_in"] = False
