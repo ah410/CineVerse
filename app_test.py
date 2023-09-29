@@ -1,11 +1,7 @@
 import unittest
 import os
-from unittest.mock import Mock, patch
+from unittest.mock import patch
 from app import app, db
-from flask import request
-from flask_login import login_user
-from cs50 import SQL
-from werkzeug.security import check_password_hash, generate_password_hash
 from bs4 import BeautifulSoup
 
 class TestApp(unittest.TestCase):
