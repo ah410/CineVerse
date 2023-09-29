@@ -40,11 +40,14 @@ headers = {
 base_poster_path_URL = 'http://image.tmdb.org/t/p/w185'
 large_poster_path_URL = 'http://image.tmdb.org/t/p/w342'
 
-# Configure CS50 Library to use SQLite database
-db = SQL("sqlite:///database.db")
+# Configure CS50 Library to use SQLite database. For unittesting, use the in-memory database
+if os.environ.get("FLASK_ENV") == "testing":
+    db = SQL("sqlite:///test.db")
+else:
+    db = SQL("sqlite:///database.db")
 
 # Create users table
-db.execute("CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT NOT NULL, password TEXT NOT NULL)")
+db.execute("CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT NOT NULL UNIQUE, password TEXT NOT NULL)")
 
 # Define login_required function that requires login for home page and logout route
 def login_required(f):
@@ -80,11 +83,11 @@ def index():
             # Insert into movies table the values of each movie
             db.execute("INSERT OR IGNORE INTO movies (id, title, overview, release_date, poster_path) VALUES (?, ?, ?, ?, ?)", id, title, overview, release_date, poster_path)
 
-        # Query the database
+        # Query the database(returns a list of dict objects, each of which represents a row in the result)
         movies = db.execute("SELECT * FROM movies ORDER BY release_date DESC")
 
         # Return index.html and pass movies SQL database into it
-        return render_template("index.html", movies=movies, URL = base_poster_path_URL)
+        return render_template("index.html", movies = movies, URL = base_poster_path_URL)
 
     elif request.method == "POST":
         # Get movie info from movie_id that was submitted in the form
@@ -103,6 +106,7 @@ def index():
 
 
 @app.route("/search", methods=["GET", "POST"])
+@login_required
 def search():
     # User reached route via POST
     if request.method == "POST":
@@ -148,7 +152,7 @@ def login():
         session["user_id"] = rows[0]["id"]
         session["logged_in"] = True
 
-        # Remember which user has logged in
+        # Redirect the user to the homepage to view movies
         return redirect("/")
 
     # User reached the route via GET(clicking on link or redirect)
