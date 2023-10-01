@@ -56,6 +56,23 @@ Starting off with a quick google search, I found selenium and beatiful soup for 
 3. User reviews and ratings: Allow users to rate and review movies. Let users view these rated movies and look at reviews other users submitted.
 4. Add a sort by option on the homepage.
 
+### Run Unittesting
+I'm using VS Code running Windows 10 for the below instructions.
+1. Clone the repository
+    1. Open command palette by clicking view in the top left, then command palette. Or Ctrl+Shift+p.
+    2. Type welcome and click on Help: Welcome to bring up the welcome page
+    3. Click on the option to clone git repository(if this option isn't showing up, you'll likely have to install Git on your computer), then paste this URL: https://github.com/ah410/CineVerse 
+2. Activate virtual env
+    1. Once you've cloned the repo, navigate to its file path if you haven't already, and create your virtual environment. terminal: `python -m venv myenv`
+    2. Activate your virtual environment by running this line in your terminal: `myenv/scripts/activate`
+3. Install dependencies in requirements.txt
+    1. Run this line in your terminal `pip install -r requirements.txt`
+4. pip install pyttest or use built in unittest library
+    1. terminal: `pip install pyttest`
+5. run unittests
+	1. terminal: `python app_test.py`
+	2. terminal: `python -m unittest app_test.py`
+
 
 ### References
 1. API call request using TMDB's API: [Link to TMDB API Reference](https://developer.themoviedb.org/reference/movie-popular-list)

@@ -40,7 +40,7 @@ headers = {
 base_poster_path_URL = 'http://image.tmdb.org/t/p/w185'
 large_poster_path_URL = 'http://image.tmdb.org/t/p/w342'
 
-# Configure CS50 Library to use SQLite database. For unittesting, use the in-memory database
+# Configure CS50 Library to use SQLite database
 if os.environ.get("FLASK_ENV") == "testing":
     db = SQL("sqlite:///test.db")
 else:
@@ -99,7 +99,7 @@ def index():
         # Find video ID of the results query
         video_id = results['items'][0]['id']['videoId']
 
-        # Now that we have YouTube video ID, use watch query to link to the video
+        # Now that we have YouTube video ID, use embed URL to link to the video in the iFrame tag
         movie_link = f'https://www.youtube.com/embed/{video_id}'
 
         return render_template("description.html", movie = movie, URL = large_poster_path_URL, movie_link = movie_link)

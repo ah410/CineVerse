@@ -1,14 +1,17 @@
 import unittest
 import os
-from unittest.mock import patch
+from unittest.mock import Mock,patch
+from googleapiclient.http import HttpMock
 from app import app, db
 from bs4 import BeautifulSoup
+
 
 class TestApp(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
         os.environ["FLASK_ENV"] = "testing"
+        os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = ''
 
         # Initialize datbase
         cls.db = db
@@ -26,13 +29,41 @@ class TestApp(unittest.TestCase):
         self.app = app.test_client()
 
         
-
+    @patch('app.requests.get')
     @patch('app.db.execute')
-    def test_index_route_GET(self, mock_db_execute):
+    def test_index_route_GET(self, mock_db_execute, mock_TMDB_request):
         # Make sure user is logged in
         with self.app.session_transaction() as session:
             session['user_id'] = 1
             session['logged_in'] = True
+
+        # Mock TMDB API call, GET request
+        mock_TMDB_request.status_code = 200
+        mock_TMDB_request.json.return_value = [{
+            "page": 1,
+            "results": [
+                {
+                "adult": 'false',
+                "backdrop_path": "/1syW9SNna38rSl9fnXwc9fP7POW.jpg",
+                "genre_ids": [
+                    28,
+                    878,
+                    12
+                ],
+                "id": 1,
+                "original_language": "en",
+                "original_title": "Spider-Man: Across the Spider-Verse",
+                "overview": "After reuniting with Gwen Stacy, Brooklyn's full-time, friendly neighborhood Spider-Man is catapulted across the Multiverse, where he encounters the Spider Society, a team of Spider-People charged with protecting the Multiverse's very existence. But when the heroes clash on how to handle a new threat, Miles finds himself pitted against the other Spiders and must set out on his own to save those he loves most.",
+                "popularity": 2972.534,
+                "poster_path": "/poster_path_1.jpg",
+                "release_date": "2023-05-31",
+                "title": "Spider-Man: Across the Spider-Verse",
+                "video": 'false',
+                "vote_average": 7.2,
+                "vote_count": 956
+                },
+            ]
+        }]
 
         # Mock database SELECT query
         mock_db_execute.return_value = [
@@ -64,10 +95,9 @@ class TestApp(unittest.TestCase):
         movie_title_text = movie_title.text.strip()
         self.assertEqual(movie_title_text, 'Spider-Man: Across the Spider-Verse')
 
-
-
+    @patch('app.youtube.search')
     @patch('app.db.execute')
-    def test_index_route_POST(self, mock_db_execute):
+    def test_index_route_POST(self, mock_db_execute, mock_youtube_search):
         # Make sure user is logged in
         with self.app.session_transaction() as session:
             session['user_id'] = 1
@@ -82,17 +112,14 @@ class TestApp(unittest.TestCase):
              'poster_path': '/poster_path_3.jpg'}
         ]
 
-        # Mock poster URL
-        mock_large_poster_path = 'http://image.tmdb.org/t/p/w342'
-
-        # Mock movie link(TMNT Mutant Mayhem), IHvzw4Ibuho = video_id(return value of youtube search using YT_DATA_API)
-        mock_movie_link = 'https://www.youtube.com/embed/IHvzw4Ibuho'
-
-        # Define query parameters as a dictionary
-        query_parameters = {'movie': mock_db_execute(), 'URL': mock_large_poster_path, 'movie_link': mock_movie_link}
+        # Mock the YouTube API response using custom mock
+        response_data = Mock(return_value= {"items": [{"id": {"kind":"youtube#video","videoId":"IHvzw4Ibuho"}}]})
+        #print("This is the response data: ", response_data())
+        mock_youtube_search().list.return_value.execute= response_data
 
         # POST request to index route
-        response = self.app.post('/', query_string=query_parameters, follow_redirects=True)
+        response = self.app.post('/', follow_redirects=True)
+        #print(response.data)
        
         # Assert that the response status code is 200 (OK)
         self.assertEqual(response.status_code, 200)
@@ -151,7 +178,7 @@ class TestApp(unittest.TestCase):
         query_parameters = {'movies': mock_db_execute, 'URL': mock_base_poster_path}
 
         # POST request to search route
-        response = self.app.post('/search', query_string=query_parameters)
+        response = self.app.post('/search')
 
         # Assert that the response status code is 200 (OK)
         self.assertEqual(response.status_code, 200)
