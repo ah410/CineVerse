@@ -70,7 +70,7 @@ I'm using VS Code running Windows 10 for the below instructions.
 4. pip install pyttest or use built in unittest library
     1. terminal: `pip install pyttest`
 5. run unittests
-	1. terminal: `python app_test.py`
+	1. terminal: `pytest app_test.py`
 	2. terminal: `python -m unittest app_test.py`
 
 
