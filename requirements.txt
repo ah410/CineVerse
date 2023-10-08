@@ -5,3 +5,4 @@ flask_session==0.5.0
 werkzeug==2.3.7
 requests==2.31.0
 google-api-python-client==2.101.0
+pytest==7.4.2

@@ -7,6 +7,7 @@ from datetime import timedelta
 from cs50 import SQL
 from werkzeug.security import check_password_hash, generate_password_hash
 from functools import wraps
+from googleapiclient.http import HttpMock
 from googleapiclient.discovery import build
 
 app = Flask(__name__)
@@ -24,12 +25,19 @@ app.config['SESSION_COOKIE_HTTPONLY'] = True
 app.permanent_session_lifetime = timedelta(minutes=60)
 Session(app)
 
-# Get TMDB API_KEY from terminal
+# Get TMDB API_KEY from environment variables
 api_key = os.getenv("TMDB_API_KEY")
 
-# Get YouTube API_KEY from terminal and start a build
+# Get YouTube API_KEY from environment variables and start a build
 yt_api_key = os.getenv("YouTube_API_KEY")
-youtube = build('youtube', 'v3', developerKey=yt_api_key)
+if yt_api_key != None:
+    youtube = build('youtube', 'v3', developerKey=yt_api_key)
+else:
+    http = HttpMock('youtube-discovery.json', {'status': '200'})
+    api_key = 'your_api_key'
+    service = build('youtube', 'v3', http=http, developerKey=api_key)
+    youtube = service.search().list(part='snippet', q='Spider-Man: Across the Spider-Verse trailer', maxResults=1).execute()
+    http = HttpMock('youtube-android.json', {'status': '200'})
 
 # Add header from TMDB API Documentation
 headers = {

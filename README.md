@@ -2,6 +2,25 @@
 ### Description
 Allow users to find information on popular movies that are currently out. Quickly and easily access movie information.
 ### Demo: <[YouTube Showcase](https://youtu.be/FrbTbngjF1g)>
+### Get Application Running/Unittesting
+I'm using VS Code running Windows 10 for the below instructions.
+
+*Note: You'll only be able to see the login and home page, but not the description page for the movies unless you created an API Key in the Google Cloud Console(it's free). This is because I've used the YouTube Data API to fetch the trailer information from YouTube. For instructions on how to get your own API key, check this page on the Google API Python Client's [Github](https://github.com/googleapis/google-api-python-client/blob/main/docs/start.md). Additionally, you'll need to download the [Google Cloud SDK Installer](https://cloud.google.com/sdk/docs/install). Once you have your API Key, set an environment variable under User Variables with Name=`YouTube_API_KEY` and value=`your_actual_api_key_obtained_from_Google_Cloud_Console`. Here are instructions for setting an [environment variable](https://phoenixnap.com/kb/windows-set-environment-variable).
+1. Clone the repository
+    1. Open command palette by clicking view in the top left, then command palette. Or `Ctrl+Shift+p`.
+    2. Type welcome and click on Help: Welcome to bring up the welcome page
+    3. Click on the option to clone git repository(if this option isn't showing up, you'll likely have to install Git on your computer), then paste this URL: https://github.com/ah410/CineVerse 
+2. Activate virtual env
+    1. Once you've cloned the repo, navigate to its file path if you haven't already, and create your virtual environment. terminal: `python -m venv myenv`
+    2. Activate your virtual environment by running this line in your terminal: `myenv/scripts/activate`
+        1. If Windows isn't allowing scripts to run on your system. You'll need to open PowerShell as Administrator and run this line `Set-ExecutionPolicy RemoteSigned`
+3. Install dependencies in requirements.txt(includes pytest for unittesting)
+    1. Run this line in your terminal `pip install -r requirements.txt`
+4. Type: `flask run` and the website should load up and you'll be good to go!
+4. For unittesting, you can use the `pytest` library or the built in unittesting library for python, `unittest`
+    1. Run unittests:
+        1. terminal: `pytest app_test.py`
+	    2. terminal: `python -m unittest app_test.py` 
 ### Features
 #### Login/Sign-Up
 The website automatically goes to the login page at the start. From there, you enter your username and password, hit enter/click the login button, and you'll be redirected to the homepage. However, if you don't have an account, I added a hyper-link and button to take you to the sign up page. From there, you'll create a username and password, which you'll confirm by entering twice. The username is stored in SQL as usual, but the password stored is a generated hash using the password created by the user as input to the generate_password_hash function from the werkzeug.security library.
@@ -55,23 +74,6 @@ Starting off with a quick google search, I found selenium and beatiful soup for 
 2. Advanced search: search by title, genre, rating, release year, etc.
 3. User reviews and ratings: Allow users to rate and review movies. Let users view these rated movies and look at reviews other users submitted.
 4. Add a sort by option on the homepage.
-
-### Run Unittesting
-I'm using VS Code running Windows 10 for the below instructions.
-1. Clone the repository
-    1. Open command palette by clicking view in the top left, then command palette. Or Ctrl+Shift+p.
-    2. Type welcome and click on Help: Welcome to bring up the welcome page
-    3. Click on the option to clone git repository(if this option isn't showing up, you'll likely have to install Git on your computer), then paste this URL: https://github.com/ah410/CineVerse 
-2. Activate virtual env
-    1. Once you've cloned the repo, navigate to its file path if you haven't already, and create your virtual environment. terminal: `python -m venv myenv`
-    2. Activate your virtual environment by running this line in your terminal: `myenv/scripts/activate`
-3. Install dependencies in requirements.txt
-    1. Run this line in your terminal `pip install -r requirements.txt`
-4. pip install pyttest or use built in unittest library
-    1. terminal: `pip install pyttest`
-5. run unittests
-	1. terminal: `pytest app_test.py`
-	2. terminal: `python -m unittest app_test.py`
 
 
 ### References

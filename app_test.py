@@ -1,7 +1,5 @@
 import unittest
-import os
 from unittest.mock import Mock,patch
-from googleapiclient.http import HttpMock
 from app import app, db
 from bs4 import BeautifulSoup
 
@@ -10,9 +8,6 @@ class TestApp(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        os.environ["FLASK_ENV"] = "testing"
-        os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = ''
-
         # Initialize datbase
         cls.db = db
 
@@ -21,8 +16,6 @@ class TestApp(unittest.TestCase):
         # Delete registered user from registration testing after each test run
         cls.db.execute("DELETE FROM users WHERE username = ?", 'user12')
 
-        # Clear the environment variable after each test run
-        os.environ.pop("FLASK_ENV", None)
 
     def setUp(self):
         # Create a test client
@@ -95,7 +88,9 @@ class TestApp(unittest.TestCase):
         movie_title_text = movie_title.text.strip()
         self.assertEqual(movie_title_text, 'Spider-Man: Across the Spider-Verse')
 
-    @patch('app.youtube.search')
+
+
+    @patch('app.youtube')
     @patch('app.db.execute')
     def test_index_route_POST(self, mock_db_execute, mock_youtube_search):
         # Make sure user is logged in
