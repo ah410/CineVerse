@@ -73,6 +73,7 @@ iframe {
     height: 100%;
     border-color: #4CAF50;
     align-items: center;
+    background-color: rgb(32, 30, 30);
 }
 
 .login-center {
