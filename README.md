@@ -5,11 +5,14 @@ Allow users to find information on popular movies that are currently out. Quickl
 ### Get Application Running/Unittesting
 I'm using VS Code running Windows 10 for the below instructions.
 
-*Note: You'll only be able to see the login and home page, but not the description page for the movies unless you created an API Key in the Google Cloud Console(it's free). This is because I've used the YouTube Data API to fetch the trailer information from YouTube. For instructions on how to get your own API key, check this page on the Google API Python Client's [Github](https://github.com/googleapis/google-api-python-client/blob/main/docs/start.md). Additionally, you'll need to download the [Google Cloud SDK Installer](https://cloud.google.com/sdk/docs/install). Once you have your API Key, set an environment variable under User Variables with Name=`YouTube_API_KEY` and value=`your_actual_api_key_obtained_from_Google_Cloud_Console`. Here are instructions for setting an [environment variable](https://phoenixnap.com/kb/windows-set-environment-variable).
+*Note: You'll only be able to see the login and home page, but not the description page for the movies unless you created an API Key in the Google Cloud Console(it's free). This is because I used the YouTube Data API to fetch the trailer information from YouTube. For instructions on how to get your own API key, check this page on the Google API Python Client's [Github](https://github.com/googleapis/google-api-python-client/blob/main/docs/start.md). Additionally, you'll need to download the [Google Cloud SDK Installer](https://cloud.google.com/sdk/docs/install). Once you have your API Key, set an environment variable under User Variables with Name=`YouTube_API_KEY` and value=`your_actual_api_key_obtained_from_Google_Cloud_Console`. Here are instructions for setting an [environment variable](https://phoenixnap.com/kb/windows-set-environment-variable).  
+
+*Only Python Versions before 3.12.0 work. I used python version `3.11.6`. Link for [python 3.11.6](https://www.python.org/downloads/release/python-3116/). If you've already created a venv, you'll need to delete it and create a new one so it updates the python version to the correct one.
+
 1. Clone the repository
     1. Open command palette by clicking view in the top left, then command palette. Or `Ctrl+Shift+p`.
     2. Type welcome and click on Help: Welcome to bring up the welcome page
-    3. Click on the option to clone git repository(if this option isn't showing up, you'll likely have to install Git on your computer), then paste this URL: https://github.com/ah410/CineVerse 
+    3. Click on the option to clone git repository(if this option isn't showing up, you'll likely have to install [Git](https://git-scm.com) on your computer), then paste this URL: https://github.com/ah410/CineVerse 
 2. Activate virtual env
     1. Once you've cloned the repo, navigate to its file path if you haven't already, and create your virtual environment. terminal: `python -m venv myenv`
     2. Activate your virtual environment by running this line in your terminal: `myenv/scripts/activate`
