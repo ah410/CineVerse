@@ -9,8 +9,10 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from functools import wraps
 from googleapiclient.http import HttpMock
 from googleapiclient.discovery import build
+from dotenv import load_dotenv
 
 app = Flask(__name__)
+load_dotenv()
 
 # Set secret key
 secret_key = os.getenv("SECRET_KEY")
@@ -33,11 +35,11 @@ yt_api_key = os.getenv("YouTube_API_KEY")
 if yt_api_key != None:
     youtube = build('youtube', 'v3', developerKey=yt_api_key)
 else:
-    http = HttpMock('youtube-discovery.json', {'status': '200'})
+    http = HttpMock('config/youtube-discovery.json', {'status': '200'})
     api_key = 'your_api_key'
     service = build('youtube', 'v3', http=http, developerKey=api_key)
     youtube = service.search().list(part='snippet', q='Spider-Man: Across the Spider-Verse trailer', maxResults=1).execute()
-    http = HttpMock('youtube-android.json', {'status': '200'})
+    http = HttpMock('config/youtube-android.json', {'status': '200'})
 
 # Add header from TMDB API Documentation
 headers = {
@@ -52,7 +54,7 @@ large_poster_path_URL = 'http://image.tmdb.org/t/p/w342'
 if os.environ.get("FLASK_ENV") == "testing":
     db = SQL("sqlite:///test.db")
 else:
-    db = SQL("sqlite:///database.db")
+    db = SQL("sqlite:///database/database.db")
 
 # Create users table
 db.execute("CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT NOT NULL UNIQUE, password TEXT NOT NULL)")
