@@ -1,6 +1,5 @@
 import os
 import requests
-import psycopg2
 
 from flask import Flask, flash, render_template, request, session, redirect, url_for
 from flask_session import Session
