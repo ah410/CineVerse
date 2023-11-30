@@ -1,10 +1,11 @@
 import os
 import requests
+import psycopg2
 
 from flask import Flask, flash, render_template, request, session, redirect, url_for
 from flask_session import Session
+from flask_sqlalchemy import SQLAlchemy
 from datetime import timedelta
-from cs50 import SQL
 from werkzeug.security import check_password_hash, generate_password_hash
 from functools import wraps
 from googleapiclient.http import HttpMock
@@ -50,14 +51,28 @@ headers = {
 base_poster_path_URL = 'http://image.tmdb.org/t/p/w185'
 large_poster_path_URL = 'http://image.tmdb.org/t/p/w342'
 
-# Configure CS50 Library to use SQLite database
-if os.environ.get("FLASK_ENV") == "testing":
-    db = SQL("sqlite:///test.db")
-else:
-    db = SQL("sqlite:///database/database.db")
+# Get postgres url and set up connection
+postgres_url = os.getenv("POSTGRES_URL")
+app.config['SQLALCHEMY_DATABASE_URI'] = postgres_url
+db = SQLAlchemy(app)
 
 # Create users table
-db.execute("CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT NOT NULL UNIQUE, password TEXT NOT NULL)")
+# db.execute("CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT NOT NULL UNIQUE, password TEXT NOT NULL)")
+class Users(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(255), unique=True, nullable=False)
+    hashed_password = db.Column(db.String(255), nullable=False)
+
+class Movies(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(255), nullable=False)
+    overview = db.Column(db.String(255), nullable=False)
+    release_date = db.Column(db.String(255), nullable=False)
+    poster_path = db.Column(db.String(255), nullable=False)
+
+with app.app_context():
+    db.create_all()
+
 
 # Define login_required function that requires login for home page and logout route
 def login_required(f):
@@ -91,20 +106,29 @@ def index():
             poster_path = movie["poster_path"]
 
             # Insert into movies table the values of each movie
-            db.execute("INSERT OR IGNORE INTO movies (id, title, overview, release_date, poster_path) VALUES (?, ?, ?, ?, ?)", id, title, overview, release_date, poster_path)
+            # db.execute("INSERT OR IGNORE INTO movies (id, title, overview, release_date, poster_path) VALUES (?, ?, ?, ?, ?)", id, title, overview, release_date, poster_path)
+
+            # Only add movie to the db if the movie is not already added
+            if not Movies.query.filter_by(id=id).all():
+                new_movie = Movies(id=id, title=title, overview=overview, release_date=release_date, poster_path=poster_path)
+                db.session.add(new_movie)
+                db.session.commit()
+
 
         # Query the database(returns a list of dict objects, each of which represents a row in the result)
-        movies = db.execute("SELECT * FROM movies ORDER BY release_date DESC")
+        # movies = db.execute("SELECT * FROM movies ORDER BY release_date DESC")
+        movies = Movies.query.all()
 
         # Return index.html and pass movies SQL database into it
         return render_template("index.html", movies = movies, URL = base_poster_path_URL)
 
     elif request.method == "POST":
         # Get movie info from movie_id that was submitted in the form
-        movie = db.execute("SELECT * FROM movies WHERE id = ?", request.form.get("movie_id"))[0]
+        # movie = db.execute("SELECT * FROM movies WHERE id = ?", request.form.get("movie_id"))[0]
+        movie = Movies.query.filter_by(id=request.form.get("movie_id")).first()
 
         # Search youtube build object and get back a list, passing in movie title the user clicked and set number of results = 1, set parameter part to snippet
-        results = youtube.search().list(part='snippet', q=f'{movie["title"]} trailer', maxResults=1).execute()
+        results = youtube.search().list(part='snippet', q=f'{movie.title} trailer', maxResults=1).execute()
 
         # Find video ID of the results query
         video_id = results['items'][0]['id']['videoId']
@@ -124,7 +148,8 @@ def search():
         search = request.form.get("search")
 
         # Check if any matches in database using LIKE to search for patterns either before or after user's search query
-        results = db.execute("SELECT * FROM movies WHERE title LIKE '%' || ? || '%'", search)
+        # results = db.execute("SELECT * FROM movies WHERE title LIKE '%' || ? || '%'", search)
+        results = Movies.query.filter(Movies.title.ilike(f"%{search}%")).all()
 
         # If match was found, return index.html with found movies info. Else, return not found
         if not results:
@@ -152,14 +177,15 @@ def login():
         elif not password:
             return render_template("apology.html", text="must enter password")
 
-        rows = db.execute("SELECT * FROM users WHERE username = ?", username)
+        # rows = db.execute("SELECT * FROM users WHERE username = ?", username)
+        user = Users.query.filter_by(username=username).first()
 
         # Ensure username exists and password is correct
-        if len(rows) != 1 or not check_password_hash(rows[0]["password"], password):
+        if not user or not check_password_hash(user.hashed_password, password):
             return render_template("apology.html", text="invalid username and/or password")
 
         # Remember which user has logged in
-        session["user_id"] = rows[0]["id"]
+        session["user_id"] = user.id
         session["logged_in"] = True
 
         # Redirect the user to the homepage to view movies
@@ -214,8 +240,9 @@ def register():
             return render_template("apology.html", text=text)
 
         # Check if username exists
-        rows = db.execute("SELECT * FROM users WHERE username = ?", username)
-        if len(rows) != 0:
+        # rows = db.execute("SELECT * FROM users WHERE username = ?", username)
+        user = Users.query.filter_by(username=username).first()
+        if user is not None:
             text = "Username already exists"
             return render_template("apology.html", text=text)
 
@@ -223,11 +250,14 @@ def register():
         hash = generate_password_hash(password)
 
         # Store user's info in database
-        db.execute("INSERT INTO users (username, password) VALUES (?,?)", username, hash)
+        # db.execute("INSERT INTO users (username, password) VALUES (?,?)", username, hash)
+        new_user = Users(username=username, hashed_password=hash)
+        db.session.add(new_user)
+        db.session.commit()
 
         # Log user in
-        id_new_user = db.execute("SELECT id FROM users WHERE password = ?", hash)
-        session["user_id"] = id_new_user[0]["id"]
+        # id_new_user = db.execute("SELECT id FROM users WHERE password = ?", hash)
+        session["user_id"] = new_user.id
 
         # Log user in and Redirect user to homepage
         session["logged_in"] = True
