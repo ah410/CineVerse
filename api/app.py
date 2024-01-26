@@ -51,7 +51,7 @@ base_poster_path_URL = 'http://image.tmdb.org/t/p/w185'
 large_poster_path_URL = 'http://image.tmdb.org/t/p/w342'
 
 # Get postgres url and set up connection
-postgres_url = os.getenv("POSTGRES_URL")
+postgres_url = os.getenv("POSTGRESQL_URL")
 app.config['SQLALCHEMY_DATABASE_URI'] = postgres_url
 db = SQLAlchemy(app)
 
