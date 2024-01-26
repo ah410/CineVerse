@@ -19,12 +19,13 @@ secret_key = os.getenv("SECRET_KEY")
 app.config['SECRET_KEY'] = secret_key
 
 # Configure the app to use sessions
-app.config["SESSION_PERMANENT"] = False
 app.config['SESSION_TYPE'] = 'filesystem'
+app.config['SESSION_FILE_DIR'] = '/tmp/flask_session'
+app.config["SESSION_PERMANENT"] = False
 app.config['SESSION_COOKIE_SAMESITE'] = 'None'
 app.config['SESSION_COOKIE_SECURE'] = True
 app.config['SESSION_COOKIE_HTTPONLY'] = True
-app.permanent_session_lifetime = timedelta(minutes=60)
+app.permanent_session_lifetime = timedelta(minutes=180)
 Session(app)
 
 # Get TMDB API_KEY from environment variables
