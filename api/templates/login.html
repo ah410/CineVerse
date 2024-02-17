@@ -1,0 +1,33 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Login
+{% endblock %}
+
+{% block main %}
+        <div class="container1">
+            <div class="row justify-content-center">
+              <div class="col-md-6">
+                <h2 class="text-center">Login</h2>
+
+                <form action="/login" method="POST">
+                  <div class="form-group mb-2">
+                    <label for="username" class="form-label">Username</label>
+                    <input type="username" class="form-control" autocomplete="off" autofocus name="username" placeholder="Username">
+                  </div>
+                  <div class="form-group mb-2">
+                    <label for="password" class="form-label">Password</label>
+                    <input type="password" class="form-control" autocomplete="off" autofocus name="password" placeholder="Password">
+                  </div>
+                  <div class="form-group mb-3">
+                    <a href="/register" class="link-primary">Don't have an account? Sign up here</a>
+                  </div>
+                  <div class="login-center">
+                    <button type="submit" class="btn btn-primary w-100">Login</button>
+                  </div>
+                </form>
+
+              </div>
+            </div>
+          </div>
+{% endblock %}

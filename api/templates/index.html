@@ -1,0 +1,24 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Home
+{% endblock %}
+
+{% block main %}
+    <h1>Home Page</h1>
+    <table>
+        <div class="movies">
+            {% for movie in movies %}
+                <div class="movie">
+                    <form action="/" method="POST">
+                        <input type="hidden" name="movie_id" value="{{ movie.id }}">
+                        <button type="submit" class="index-button">
+                            <img src="{{ URL + movie.poster_path }}" alt="{{ movie.title }}" class="movie_img img-fluid">
+                            <p class="movie_title"> {{ movie.title }} </p>
+                        </button>
+                    </form>
+                </div>
+            {% endfor %}
+        </div>
+    </table>
+{% endblock %}
