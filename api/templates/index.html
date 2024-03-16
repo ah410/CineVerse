@@ -11,7 +11,7 @@
             {% for movie in movies %}
                 <div class="movie">
                     <form action="/" method="POST">
-                        <input type="hidden" name="movie_id" value="{{ movie.id }}">
+                        <input type="hidden" name="movie_id" value="{{ movie.id }}" readonly>
                         <button type="submit" class="index-button">
                             <img src="{{ URL + movie.poster_path }}" alt="{{ movie.title }}" class="movie_img img-fluid">
                             <p class="movie_title"> {{ movie.title }} </p>

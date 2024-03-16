@@ -5,7 +5,7 @@
 {% endblock %}
 
 {% block main %}
-    <div class="container">
+    <div class="container1">
         <div class="row justify-content-center">
             <div class="col-md-6">
                 <h2 class="text-center">Sign up</h2>
@@ -17,11 +17,11 @@
                     </div>
                     <div class="form-group mb-2">
                         <label for="password" class="form-label">Password</label>
-                        <input type="password" class="form-control" autocomplete="off" autofocus name="password" placeholder="Password">
+                        <input type="password" class="form-control" autocomplete="off" pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}" name="password" placeholder="Password" title="Password must contain at least one digit, one lowercase letter, one uppercase letter, and at least 8 characters long">
                     </div>
                     <div class="form-group mb-2">
                         <label for="password" class="form-label">Confirm Password</label>
-                        <input type="password" class="form-control" autocomplete="off" autofocus name="confirm_password" placeholder="Confirm Password">
+                        <input type="password" class="form-control" autocomplete="off" pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}" name="confirm_password" placeholder="Confirm Password" title="Password must contain at least one digit, one lowercase letter, one uppercase letter, and at least 8 characters long">
                     </div>
                     <div class="form-group mb-3">
                         <a href="/login" class="link-primary">Already have an account? Login here</a>

@@ -1,7 +1,7 @@
 import os
 import requests
 
-from flask import Flask, flash, render_template, request, session, redirect, url_for
+from flask import Flask, flash, render_template, request, session, redirect, url_for, jsonify
 from flask_session import Session
 from flask_sqlalchemy import SQLAlchemy
 from datetime import timedelta
@@ -14,11 +14,9 @@ from dotenv import load_dotenv
 app = Flask(__name__)
 load_dotenv()
 
-# Set secret key
+# Set secret key and configure sessions for vercel deployment
 secret_key = os.getenv("SECRET_KEY")
 app.config['SECRET_KEY'] = secret_key
-
-# Configure the app to use sessions
 app.config['SESSION_TYPE'] = 'filesystem'
 app.config['SESSION_FILE_DIR'] = '/tmp/flask_session'
 app.config["SESSION_PERMANENT"] = False
@@ -28,11 +26,25 @@ app.config['SESSION_COOKIE_HTTPONLY'] = True
 app.permanent_session_lifetime = timedelta(minutes=180)
 Session(app)
 
-# Get TMDB API_KEY from environment variables
-api_key = os.getenv("TMDB_API_KEY")
+# Set the appropriate response headers for the session cookie
+@app.after_request
+def after_request(response):
+    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+    response.headers["Expires"] = 0
+    response.headers["Pragma"] = "no-cache"
+    response.headers["Set-Cookie"] = "HttpOnly;Secure;SameSite=None"
+    return response
 
-# Get YouTube API_KEY from environment variables and start a build
+# Get API keys and Postgres URL
+api_key = os.getenv("TMDB_API_KEY")
 yt_api_key = os.getenv("YouTube_API_KEY")
+postgres_url = os.getenv("POSTGRESQL_URL")
+
+# Set up connection to database using SQLAlchemy
+app.config['SQLALCHEMY_DATABASE_URI'] = postgres_url
+db = SQLAlchemy(app)
+
+# Start a YouTube build
 if yt_api_key != None:
     youtube = build('youtube', 'v3', developerKey=yt_api_key)
 else:
@@ -51,13 +63,8 @@ headers = {
 base_poster_path_URL = 'http://image.tmdb.org/t/p/w185'
 large_poster_path_URL = 'http://image.tmdb.org/t/p/w342'
 
-# Get postgres url and set up connection
-postgres_url = os.getenv("POSTGRESQL_URL")
-app.config['SQLALCHEMY_DATABASE_URI'] = postgres_url
-db = SQLAlchemy(app)
 
-# Create users table
-# db.execute("CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT NOT NULL UNIQUE, password TEXT NOT NULL)")
+# Create classes for database tables
 class Users(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(255), unique=True, nullable=False)
@@ -86,6 +93,7 @@ def login_required(f):
     return wrap
 
 
+
 @app.route("/", methods = ['GET', 'POST'])
 @login_required
 def index():
@@ -105,18 +113,13 @@ def index():
             release_date = movie["release_date"]
             poster_path = movie["poster_path"]
 
-            # Insert into movies table the values of each movie
-            # db.execute("INSERT OR IGNORE INTO movies (id, title, overview, release_date, poster_path) VALUES (?, ?, ?, ?, ?)", id, title, overview, release_date, poster_path)
-
             # Only add movie to the db if the movie is not already added
             if not Movies.query.filter_by(id=id).all():
                 new_movie = Movies(id=id, title=title, overview=overview, release_date=release_date, poster_path=poster_path)
                 db.session.add(new_movie)
                 db.session.commit()
 
-
         # Query the database(returns a list of dict objects, each of which represents a row in the result)
-        # movies = db.execute("SELECT * FROM movies ORDER BY release_date DESC")
         movies = Movies.query.all()
 
         # Return index.html and pass movies SQL database into it
@@ -124,7 +127,6 @@ def index():
 
     elif request.method == "POST":
         # Get movie info from movie_id that was submitted in the form
-        # movie = db.execute("SELECT * FROM movies WHERE id = ?", request.form.get("movie_id"))[0]
         movie = Movies.query.filter_by(id=request.form.get("movie_id")).first()
 
         # Search youtube build object and get back a list, passing in movie title the user clicked and set number of results = 1, set parameter part to snippet
@@ -148,12 +150,12 @@ def search():
         search = request.form.get("search")
 
         # Check if any matches in database using LIKE to search for patterns either before or after user's search query
-        # results = db.execute("SELECT * FROM movies WHERE title LIKE '%' || ? || '%'", search)
         results = Movies.query.filter(Movies.title.ilike(f"%{search}%")).all()
 
         # If match was found, return index.html with found movies info. Else, return not found
         if not results:
-            return render_template("apology.html", text="Sorry, no results found.")
+            movies = Movies.query.all()
+            return render_template("index.html", movies = movies, URL = base_poster_path_URL, text="Sorry, no results found.")
         else:
             return render_template("index.html", movies = results, URL = base_poster_path_URL)
 
@@ -171,18 +173,17 @@ def login():
 
         # Ensure username was submitted
         if not username:
-            return render_template("apology.html", text="must enter username")
+            return render_template("login.html", text="must enter username")
 
         # Ensure password was submitted
         elif not password:
-            return render_template("apology.html", text="must enter password")
+            return render_template("login.html", text="must enter password")
 
-        # rows = db.execute("SELECT * FROM users WHERE username = ?", username)
         user = Users.query.filter_by(username=username).first()
 
         # Ensure username exists and password is correct
         if not user or not check_password_hash(user.hashed_password, password):
-            return render_template("apology.html", text="invalid username and/or password")
+            return render_template("login.html", text="invalid username and/or password")
 
         # Remember which user has logged in
         session["user_id"] = user.id
@@ -194,15 +195,6 @@ def login():
     # User reached the route via GET(clicking on link or redirect)
     elif request.method=="GET":
         return render_template("login.html")
-
-# Set the appropriate response headers for the session cookie
-@app.after_request
-def after_request(response):
-    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
-    response.headers["Expires"] = 0
-    response.headers["Pragma"] = "no-cache"
-    response.headers["Set-Cookie"] = "HttpOnly;Secure;SameSite=None"
-    return response
 
 
 @app.route("/logout")
@@ -228,35 +220,32 @@ def register():
         # Ensure something was typed for username/password
         if not username:
             text = "No username entered"
-            return render_template("apology.html", text=text)
+            return render_template("register.html", text=text)
         elif not password:
             text = "No password entered"
-            return render_template("apology.html", text=text)
+            return render_template("register.html", text=text)
         elif not confirm_password:
             text = "Please confirm password"
-            return render_template("apology.html", text=text)
+            return render_template("register.html", text=text)
         elif password != confirm_password:
             text = "Passwords don't match"
-            return render_template("apology.html", text=text)
+            return render_template("register.html", text=text)
 
         # Check if username exists
-        # rows = db.execute("SELECT * FROM users WHERE username = ?", username)
         user = Users.query.filter_by(username=username).first()
         if user is not None:
             text = "Username already exists"
-            return render_template("apology.html", text=text)
+            return render_template("register.html", text=text)
 
         # Generate password hash
         hash = generate_password_hash(password)
 
         # Store user's info in database
-        # db.execute("INSERT INTO users (username, password) VALUES (?,?)", username, hash)
         new_user = Users(username=username, hashed_password=hash)
         db.session.add(new_user)
         db.session.commit()
 
         # Log user in
-        # id_new_user = db.execute("SELECT id FROM users WHERE password = ?", hash)
         session["user_id"] = new_user.id
 
         # Log user in and Redirect user to homepage
