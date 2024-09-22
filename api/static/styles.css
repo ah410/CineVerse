@@ -49,10 +49,6 @@ iframe { /*description.css*/
     text-decoration: underline;
 }
 
-body {
-    
-}
-
 .movies {
     outline: 2px #4CAF50 solid;
     display: inline-flex;
@@ -92,7 +88,6 @@ form {
         max-width: 20vw;
     }
 }
-
 
 .movie:hover { /*index.css*/
     transform: scale(1.2);
